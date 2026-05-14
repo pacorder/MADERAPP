@@ -124,6 +124,8 @@ export function calculateWallCabinetParts(dims: CabinetDimensions): Part[] {
 
 export function calculateShelvingParts(dims: CabinetDimensions, numShelvesOrPositions: number | number[] = 3): Part[] {
   const { width, height, depth, thickness } = dims;
+  const plinthHeight = 80; // Standard zócalo height
+
   const parts: Part[] = [
     {
       id: crypto.randomUUID(),
@@ -161,12 +163,30 @@ export function calculateShelvingParts(dims: CabinetDimensions, numShelvesOrPosi
       quantity: 1,
       material: 'MDF',
     },
+    {
+      id: crypto.randomUUID(),
+      name: 'Zócalo Frontal',
+      width: width - 2 * thickness,
+      height: plinthHeight,
+      thickness,
+      quantity: 1,
+      material: 'MDF',
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Zócalo Trasero',
+      width: width - 2 * thickness,
+      height: plinthHeight,
+      thickness,
+      quantity: 1,
+      material: 'MDF',
+    },
   ];
 
   const positions = Array.isArray(numShelvesOrPositions) 
     ? numShelvesOrPositions 
     : Array.from({ length: numShelvesOrPositions }).map((_, i) => 
-        Math.round(((height - 2 * thickness) / (numShelvesOrPositions + 1)) * (i + 1))
+        Math.round(((height - 2 * thickness - plinthHeight) / (numShelvesOrPositions + 1)) * (i + 1))
       );
 
   // Internal shelves

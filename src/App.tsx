@@ -14,7 +14,8 @@ import {
   Settings2,
   Dna,
   Maximize2,
-  Rows
+  Rows,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -59,9 +60,22 @@ const SHEET_TYPES = [
 ];
 
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
-  const [activeTab, setActiveTab] = useState<'editor' | 'despiece' | 'cortex'>('editor');
+  const [activeTab, setActiveTab] = useState<'editor' | 'despiece' | 'cortex' | 'assembly'>('editor');
   const [selectedSheetType, setSelectedSheetType] = useState<'full' | 'half'>('full');
+  const [selectedColor, setSelectedColor] = useState<string>('#FFFFFF');
+
+  const FINISH_COLORS = [
+    { name: 'Blanco', hex: '#FFFFFF' },
+    { name: 'Roble', hex: '#B8977E' },
+    { name: 'Cerezo', hex: '#93441A' },
+    { name: 'Silver', hex: '#C0C0C0' },
+    { name: 'Gray', hex: '#808080' },
+    { name: 'Black', hex: '#000000' },
+    { name: 'Red', hex: '#FF0000' },
+    { name: 'Maroon', hex: '#800000' },
+  ];
 
   // Initialization
   useEffect(() => {
@@ -106,7 +120,7 @@ export default function App() {
       name = 'Mueble Aéreo';
     } else if (type === 'shelving') {
       const shelvingDims = { ...DEFAULT_DIMENSIONS, height: 1800, depth: 300 };
-      const shelfPositions = [400, 800, 1200, 1600]; // Default heights
+      const shelfPositions = [400, 750, 1100, 1450]; // Default heights
       parts = calculateShelvingParts(shelvingDims, shelfPositions);
       name = 'Estantería / Librero';
       
@@ -203,14 +217,21 @@ export default function App() {
 
   const handleAddShelf = (itemId: string) => {
     if (!currentProject) return;
+    const plinthHeight = 80;
     const updatedItems = currentProject.items.map(item => {
       if (item.id === itemId) {
         const currentPositions = item.shelfPositions || [];
         const lastPos = currentPositions.length > 0 ? currentPositions[currentPositions.length - 1] : 0;
-        const newPos = Math.min(lastPos + 300, item.dimensions.height - 2 * item.dimensions.thickness);
-        const newPositions = [...currentPositions, newPos].sort((a, b) => a - b);
-        const newParts = calculateShelvingParts(item.dimensions, newPositions);
-        return { ...item, shelfPositions: newPositions, parts: newParts };
+        const maxPos = item.dimensions.height - 2 * item.dimensions.thickness - plinthHeight - 50; // 50mm safety margin
+        const nextPos = lastPos + 300;
+        const newPos = Math.min(nextPos, maxPos);
+        
+        // Only add if it's not overlapping too much with the last one or exceeds max
+        if (newPos > lastPos + 10 && newPos <= maxPos) {
+          const newPositions = [...currentPositions, newPos].sort((a, b) => a - b);
+          const newParts = calculateShelvingParts(item.dimensions, newPositions);
+          return { ...item, shelfPositions: newPositions, parts: newParts };
+        }
       }
       return item;
     });
@@ -280,6 +301,115 @@ export default function App() {
     }
   };
 
+  if (showLanding) {
+    return (
+      <div className="min-h-screen bg-natural-muted font-sans selection:bg-natural-accent/30 selection:text-natural-primary">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-natural-divider px-10 h-24 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-natural-primary rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+              <Box className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black italic text-natural-primary tracking-tighter leading-none">CORTEX</h1>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-natural-secondary -mt-0.5">Optimice & Design</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setShowLanding(false)}
+            className="px-8 py-3 bg-natural-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-xl shadow-natural-primary/20"
+          >
+            Comenzar Ahora
+          </button>
+        </header>
+
+        <main className="pt-48 pb-20 px-10">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-20">
+            <div className="flex-1 space-y-8">
+              <div className="flex items-center gap-3">
+                <span className="px-4 py-2 bg-natural-accent/10 border border-natural-accent/20 rounded-full text-[10px] font-black uppercase tracking-widest text-natural-primary italic">Profesional & Preciso</span>
+              </div>
+              <h2 className="text-7xl font-black text-natural-primary leading-[1.1] tracking-tighter italic">
+                Optimiza tu despiece con <span className="text-natural-accent">Cortex</span>.
+              </h2>
+              <p className="text-xl text-natural-secondary font-medium leading-relaxed max-w-xl">
+                La herramienta definitiva para carpinteros y diseñadores. Calcula el aprovechamiento máximo de tus planchas, visualiza en 3D y genera guías de montaje técnicas en segundos.
+              </p>
+              <div className="flex gap-6 pt-4">
+                <button 
+                  onClick={() => setShowLanding(false)}
+                  className="px-10 py-5 bg-natural-primary text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:shadow-2xl hover:shadow-natural-primary/30 transition-all flex items-center gap-3 group"
+                >
+                  Ir al Optimizador <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 relative">
+              <div className="w-full aspect-square bg-white rounded-[4rem] shadow-2xl border border-natural-border p-8 flex items-center justify-center overflow-hidden">
+                <div className="relative w-full h-full">
+                  <div className="absolute top-10 right-10 w-40 h-40 bg-natural-accent rounded-3xl opacity-10 blur-3xl animate-pulse" />
+                  <div className="absolute bottom-10 left-10 w-60 h-60 bg-natural-primary rounded-full opacity-5 blur-3xl" />
+                  <div className="relative z-10 w-full h-full flex items-center justify-center">
+                    <Box className="w-48 h-48 text-natural-primary opacity-20" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <section className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div className="p-10 bg-white rounded-[3rem] border border-natural-border shadow-md space-y-6">
+              <div className="w-16 h-16 bg-natural-muted rounded-2xl flex items-center justify-center">
+                <Settings2 className="w-8 h-8 text-natural-primary" />
+              </div>
+              <h3 className="text-2xl font-black italic text-natural-primary uppercase tracking-tighter">Algoritmo de Nesting</h3>
+              <p className="text-natural-secondary font-medium leading-relaxed">
+                Nuestra lógica avanzada asegura el mínimo desperdicio de material en cortes longitudinales y transversales de forma automática.
+              </p>
+            </div>
+            <div className="p-10 bg-white rounded-[3rem] border border-natural-border shadow-md space-y-6">
+              <div className="w-16 h-16 bg-natural-muted rounded-2xl flex items-center justify-center">
+                <Dna className="w-8 h-8 text-natural-primary" />
+              </div>
+              <h3 className="text-2xl font-black italic text-natural-primary uppercase tracking-tighter">Guía de Montaje</h3>
+              <p className="text-natural-secondary font-medium leading-relaxed">
+                Visualización técnica por capas (Wireframe) para entender el ensamble de cada pieza sin errores de interpretación.
+              </p>
+            </div>
+            <div className="p-10 bg-white rounded-[3rem] border border-natural-border shadow-md space-y-6">
+              <div className="w-16 h-16 bg-natural-muted rounded-2xl flex items-center justify-center">
+                <Layout className="w-8 h-8 text-natural-primary" />
+              </div>
+              <h3 className="text-2xl font-black italic text-natural-primary uppercase tracking-tighter">Diseño 3D Realista</h3>
+              <p className="text-natural-secondary font-medium leading-relaxed">
+                Muestra a tus clientes cómo quedará su proyecto final con nuestra amplia selección de acabados y texturas de madera.
+              </p>
+            </div>
+          </section>
+
+          {/* Espacio para AdSense en Landing */}
+          <div className="mt-40 w-full p-20 bg-natural-border/20 rounded-[4rem] text-center border border-dashed border-natural-border">
+             <p className="text-[10px] font-black uppercase tracking-widest text-natural-secondary mb-8">Información Importante</p>
+             <div className="max-w-3xl mx-auto space-y-6">
+               <p className="text-lg text-natural-primary font-bold italic">
+                 Al utilizar nuestra plataforma, aceptas que el procesamiento de datos se realiza localmente para garantizar tu privacidad.
+               </p>
+               <div className="w-full h-[250px] bg-white border border-natural-border rounded-3xl flex items-center justify-center shadow-sm">
+                  <span className="text-[10px] uppercase font-black tracking-widest text-natural-muted">Espacio Publicitario de Google Adsense</span>
+               </div>
+             </div>
+          </div>
+          
+          <footer className="mt-40 text-center pb-20">
+             <div className="flex items-center justify-center gap-4 mb-4">
+                <Box className="w-6 h-6 text-natural-primary opacity-30" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-natural-secondary">Cortex Optimice 2026 &bull; Diseñado para la Industria Madera</span>
+             </div>
+          </footer>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-natural-bg text-natural-text font-sans">
       <Toaster position="top-right" />
@@ -345,6 +475,13 @@ export default function App() {
                     >
                       <Settings2 className="w-4 h-4" />
                       <span className="text-xs font-bold uppercase tracking-tight">Optimización</span>
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('assembly')}
+                      className={`flex items-center gap-3 p-3 rounded-xl transition-all ${activeTab === 'assembly' ? 'bg-natural-accent/20 text-natural-primary border border-natural-primary/10' : 'hover:bg-natural-muted text-natural-secondary hover:text-natural-text'}`}
+                    >
+                      <Dna className="w-4 h-4" />
+                      <span className="text-xs font-bold uppercase tracking-tight">Detalle Montaje</span>
                     </button>
                   </div>
                 </div>
@@ -423,6 +560,9 @@ export default function App() {
                     </TabsTrigger>
                     <TabsTrigger value="cortex" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-natural-primary rounded-none h-16 px-0 font-bold text-xs uppercase tracking-widest text-natural-secondary data-[state=active]:text-natural-primary transition-all gap-2">
                       <Settings2 className="w-4 h-4" /> Optimización
+                    </TabsTrigger>
+                    <TabsTrigger value="assembly" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-natural-primary rounded-none h-16 px-0 font-bold text-xs uppercase tracking-widest text-natural-secondary data-[state=active]:text-natural-primary transition-all gap-2">
+                      <Dna className="w-4 h-4" /> Detalle Montaje
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -528,7 +668,7 @@ export default function App() {
                                         {item.type === 'shelving' && item.shelfPositions && (
                                           <div className="col-span-3 mt-4 flex flex-col gap-4">
                                             <div className="flex items-center justify-between px-1">
-                                              <Label className="text-[9px] uppercase font-bold text-natural-secondary tracking-widest">Alturas de Repisas (mm)</Label>
+                                              <Label className="text-[9px] uppercase font-bold text-natural-secondary tracking-widest">Alturas desde Base (mm)</Label>
                                               <Button variant="ghost" size="sm" onClick={() => handleAddShelf(item.id)} className="h-6 px-2 text-[8px] font-black uppercase text-natural-primary">
                                                 <Plus className="w-3 h-3 mr-1" /> Agregar
                                               </Button>
@@ -567,19 +707,33 @@ export default function App() {
                           <div className="flex-1 relative">
                             {currentProject.items.length > 0 ? (
                               <div className="w-full h-full rounded-[2rem] border border-natural-border bg-white shadow-xl overflow-hidden relative">
-                                <div className="absolute top-6 left-6 z-10 flex gap-2">
-                                  <span className="px-3 py-1 bg-natural-muted border border-natural-border rounded-full text-[10px] font-bold uppercase tracking-widest text-natural-primary">Vista Previa 3D</span>
+                                <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
+                                  <span className="px-3 py-1 bg-natural-muted border border-natural-border rounded-full text-[10px] font-bold uppercase tracking-widest text-natural-primary w-fit">Vista Previa 3D</span>
+                                  <div className="flex gap-1.5 p-1.5 bg-white/80 backdrop-blur border border-natural-divider rounded-xl shadow-sm">
+                                    {FINISH_COLORS.map(c => (
+                                      <button
+                                        key={c.hex}
+                                        onClick={() => setSelectedColor(c.hex)}
+                                        className={`w-6 h-6 rounded-md border transition-all ${selectedColor === c.hex ? 'border-natural-primary scale-110 shadow-md' : 'border-natural-border hover:scale-105'}`}
+                                        style={{ backgroundColor: c.hex }}
+                                        title={c.name}
+                                      />
+                                    ))}
+                                  </div>
                                 </div>
                                 <ThreeDView 
                                   type={currentProject.items[0].type} 
                                   dimensions={currentProject.items[0].dimensions}
                                   parts={currentProject.items[0].parts}
                                   shelfPositions={currentProject.items[0].shelfPositions}
+                                  finishColor={selectedColor}
                                  />
                                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-10 px-8 py-3 bg-white/90 backdrop-blur border border-natural-border rounded-2xl shadow-lg">
                                     <div className="flex flex-col items-center">
-                                      <p className="text-xs text-natural-secondary font-bold uppercase tracking-tighter">Material</p>
-                                      <p className="text-sm font-bold text-natural-primary italic">MDF Roble</p>
+                                      <p className="text-xs text-natural-secondary font-bold uppercase tracking-tighter">Color / Acabado</p>
+                                      <p className="text-sm font-bold text-natural-primary italic">
+                                        {FINISH_COLORS.find(c => c.hex === selectedColor)?.name}
+                                      </p>
                                     </div>
                                     <Separator orientation="vertical" className="h-8 bg-natural-divider" />
                                     <div className="flex flex-col items-center">
@@ -680,7 +834,7 @@ export default function App() {
                     </Card>
                   </TabsContent>
 
-                  <TabsContent value="cortex" className="m-0 h-full p-8 overflow-hidden">
+                   <TabsContent value="cortex" className="m-0 h-full p-8 overflow-hidden">
                     <div className="flex flex-col gap-8 h-full overflow-hidden">
                       <div className="flex items-center justify-between bg-white p-8 rounded-3xl border border-natural-border shadow-md">
                         <div className="flex items-center gap-10">
@@ -732,6 +886,47 @@ export default function App() {
                            )}
                          </div>
                       </ScrollArea>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="assembly" className="m-0 h-full p-8 overflow-hidden">
+                    <div className="h-full flex flex-col gap-8">
+                       <div className="flex items-center justify-between bg-white p-8 rounded-3xl border border-natural-border shadow-md">
+                        <div>
+                          <h2 className="text-2xl font-black italic text-natural-primary tracking-tighter uppercase">Guía de Montaje Técnico</h2>
+                          <p className="text-xs text-natural-secondary font-medium tracking-tight mt-1">Estructura interna y visualización isométrica de ensamble.</p>
+                        </div>
+                        <div className="flex items-center gap-3 px-6 py-3 bg-natural-muted border border-natural-border rounded-2xl shadow-sm">
+                           <Layout className="w-5 h-5 text-natural-primary" />
+                           <span className="text-[10px] font-black text-natural-primary uppercase tracking-widest">Vista Estructural (Wireframe)</span>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 bg-white rounded-3xl border border-natural-border shadow-md overflow-hidden relative">
+                        {currentProject.items.length > 0 ? (
+                          <>
+                            <ThreeDView 
+                               type={currentProject.items[0].type} 
+                               dimensions={currentProject.items[0].dimensions} 
+                               parts={currentProject.items[0].parts}
+                               shelfPositions={currentProject.items[0].shelfPositions}
+                               isAssembly={true}
+                             />
+                             <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur border border-natural-border px-4 py-2 rounded-xl shadow-sm">
+                               <p className="text-[10px] font-black uppercase text-natural-primary mb-1">Modo de Visualización</p>
+                               <div className="flex items-center gap-2">
+                                 <div className="w-2 h-2 rounded-full bg-natural-primary animate-pulse" />
+                                 <span className="text-[10px] font-bold text-natural-secondary">Esquema Alámbrico de Alta Precisión</span>
+                               </div>
+                             </div>
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-natural-secondary">
+                            <Package className="w-12 h-12 opacity-20 mb-4" />
+                            <p className="text-sm font-bold uppercase tracking-widest">Agregue piezas para ver el ensamble</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </TabsContent>
                 </div>
