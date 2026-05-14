@@ -60,7 +60,7 @@ const SHEET_TYPES = [
 ];
 
 export default function App() {
-  const [showLanding, setShowLanding] = useState(true);
+  const [view, setView] = useState<'landing' | 'about' | 'app'>('landing');
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [activeTab, setActiveTab] = useState<'editor' | 'despiece' | 'cortex' | 'assembly'>('editor');
   const [selectedSheetType, setSelectedSheetType] = useState<'full' | 'half'>('full');
@@ -301,7 +301,70 @@ export default function App() {
     }
   };
 
-  if (showLanding) {
+  if (view === 'about') {
+    return (
+      <div className="min-h-screen bg-natural-muted font-sans flex flex-col">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-natural-divider px-10 h-24 flex items-center justify-between">
+          <div className="flex items-center gap-4 cursor-pointer" onClick={() => setView('landing')}>
+            <div className="w-12 h-12 bg-white border-2 border-natural-primary rounded-2xl flex items-center justify-center shadow-md">
+              <Box className="w-7 h-7 text-natural-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black italic text-natural-primary tracking-tighter leading-none">CORTEX</h1>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-natural-secondary -mt-0.5">Quiénes Somos</p>
+            </div>
+          </div>
+          <nav className="flex items-center gap-10">
+            <button onClick={() => setView('landing')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary transition-colors">Inicio</button>
+            <button onClick={() => setView('app')} className="px-6 py-2.5 bg-natural-primary text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform shadow-lg">Ir al Optimizador</button>
+          </nav>
+        </header>
+
+        <main className="pt-48 pb-20 px-10 flex-1">
+          <div className="max-w-4xl mx-auto space-y-16">
+            <div className="space-y-6">
+              <h2 className="text-6xl font-black text-natural-primary leading-tight italic tracking-tighter">Pasión por la madera y la <span className="text-natural-accent">tecnología</span>.</h2>
+              <p className="text-xl text-natural-secondary font-medium leading-relaxed">
+                Mi nombre es un reflejo de miles de apasionados que, como tú, ven en un trozo de madera una oportunidad para crear algo eterno. Cortex nació de la necesidad de cerrar la brecha entre la carpintería artesanal y las herramientas digitales modernas.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-4">
+                <h3 className="text-xl font-black italic text-natural-primary uppercase">Nuestra Misión</h3>
+                <p className="text-natural-secondary leading-relaxed">
+                  Busco democratizar el acceso a herramientas de alta precisión. Mi objetivo es que cada diseñador y carpintero, independientemente de su escala de producción, pueda aprovechar el modelamiento 3D y los algoritmos de nesting para llevar su imaginación al límite sin preocuparse por el desperdicio de material.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-xl font-black italic text-natural-primary uppercase">Comunidad Primero</h3>
+                <p className="text-natural-secondary leading-relaxed">
+                  Cortex no es solo software; es una herramienta pensada para y por la comunidad. Me encanta ver cómo los usuarios sacan el mayor provecho a sus ideas, transformando simples diagramas en muebles con alma que habitan hogares reales.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-12 bg-white rounded-[3rem] border border-natural-border shadow-xl space-y-8">
+              <h3 className="text-2xl font-black italic text-natural-primary uppercase tracking-tighter text-center">Un mensaje para los creadores</h3>
+              <p className="text-center italic text-lg text-natural-secondary">
+                "La madera tiene una memoria que nosotros, como artesanos, debemos respetar. Optimizar cada corte no es solo una cuestión económica; es una forma de respeto hacia este recurso natural tan noble."
+              </p>
+              <div className="flex justify-center">
+                <button 
+                  onClick={() => setView('app')}
+                  className="px-12 py-4 bg-natural-primary text-white rounded-3xl font-black text-xs uppercase tracking-widest hover:shadow-2xl transition-all"
+                >
+                  Crea tu próximo diseño hoy
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (view === 'landing') {
     return (
       <div className="min-h-screen bg-natural-muted font-sans selection:bg-natural-accent/30 selection:text-natural-primary">
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-natural-divider px-10 h-24 flex items-center justify-between">
@@ -314,12 +377,15 @@ export default function App() {
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-natural-secondary -mt-0.5">Optimice & Design</p>
             </div>
           </div>
-          <button 
-            onClick={() => setShowLanding(false)}
-            className="px-8 py-3 bg-natural-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-xl shadow-natural-primary/20"
-          >
-            Comenzar Ahora
-          </button>
+          <nav className="flex items-center gap-10">
+            <button onClick={() => setView('about')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary transition-colors">Quiénes Somos</button>
+            <button 
+              onClick={() => setView('app')}
+              className="px-8 py-3 bg-natural-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-xl shadow-natural-primary/20"
+            >
+              Comenzar Ahora
+            </button>
+          </nav>
         </header>
 
         <main className="pt-48 pb-20 px-10">
@@ -336,7 +402,7 @@ export default function App() {
               </p>
               <div className="flex gap-6 pt-4">
                 <button 
-                  onClick={() => setShowLanding(false)}
+                  onClick={() => setView('app')}
                   className="px-10 py-5 bg-natural-primary text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:shadow-2xl hover:shadow-natural-primary/30 transition-all flex items-center gap-3 group"
                 >
                   Ir al Optimizador <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -355,6 +421,103 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          {/* New Extensive Content Sections */}
+          <section className="mt-40 space-y-32 max-w-5xl mx-auto">
+            <div className="space-y-12">
+              <h2 className="text-5xl font-black text-natural-primary italic tracking-tighter text-center">¿Por qué es vital la optimización de despiece?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                <div className="space-y-6">
+                  <p className="text-lg text-natural-secondary font-medium leading-relaxed">
+                    En la industria del mueble contemporánea, la eficiencia no es solo un lujo, es una necesidad operativa. Cada centímetro cuadrado de material cuenta. El uso de algoritmos de optimización de corte (Nesting) permite reducir el desperdicio hasta en un 25%, impactando directamente en la rentabilidad de tus proyectos y reduciendo la huella ambiental.
+                  </p>
+                  <p className="text-lg text-natural-secondary font-medium leading-relaxed">
+                    Nuestra plataforma utiliza lógica matemática avanzada para organizar tus piezas (laterales, bases, techos y estantes) dentro de las planchas de formato estándar. Esto evita errores de cálculo manuales que suelen resultar en piezas mal cortadas o material insuficiente a mitad del proceso.
+                  </p>
+                </div>
+                <div className="bg-white p-10 rounded-[3rem] border border-natural-border shadow-lg">
+                  <h4 className="text-xs font-black uppercase text-natural-accent mb-4 tracking-widest">Beneficios Clave</h4>
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-natural-primary mt-2" />
+                      <span className="text-sm font-bold text-natural-primary">Reducción drástica de costos en materiales.</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-natural-primary mt-2" />
+                      <span className="text-sm font-bold text-natural-primary">Menor tiempo dedicado a la planificación del corte.</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-natural-primary mt-2" />
+                      <span className="text-sm font-bold text-natural-primary">Generación de listas de materiales precisas para compras.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-12">
+              <h2 className="text-5xl font-black text-natural-primary italic tracking-tighter text-center">Modelado 3D como herramienta de venta</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                <div className="order-2 md:order-1 bg-natural-primary p-12 rounded-[3rem] text-white space-y-8">
+                  <h4 className="text-2xl font-black italic tracking-tight uppercase">Visualización Inmersiva</h4>
+                  <p className="opacity-80 leading-relaxed">
+                    Un cliente que puede visualizar su mueble antes de que se corte la primera tabla es un cliente más seguro. Nuestra vista previa 3D te permite mostrar la proporción exacta del mueble, la distribución de estantes y, lo más importante, el acabado final.
+                  </p>
+                  <p className="opacity-80 leading-relaxed">
+                    Con las opciones de texturas como Roble, Cerezo y acabados modernos, puedes presentar propuestas realistas que eliminan las dudas sobre el resultado estético del proyecto.
+                  </p>
+                </div>
+                <div className="order-1 md:order-2 space-y-6">
+                  <p className="text-lg text-natural-secondary font-medium leading-relaxed">
+                    El diseño asistido por computadora ya no es exclusivo de grandes estudios de arquitectura. Cortex lleva el poder del modelado isométrico a tu navegador, permitiéndote iterar sobre dimensiones de altura, profundidad y ancho en tiempo real.
+                  </p>
+                  <p className="text-lg text-natural-secondary font-medium leading-relaxed">
+                    Además, nuestra función de "Detalle de Montaje" en modo wireframe (esquema de alambre) permite desglosar la estructura interna. Esto es fundamental para entender cómo encajan los amarres superiores, el fondo y los zócalos, garantizando una construcción robusta y duradera.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-12 bg-white p-20 rounded-[4rem] border border-natural-border shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-natural-accent/5 rounded-full blur-3xl -mr-32 -mt-32" />
+               <h2 className="text-4xl font-black text-natural-primary italic tracking-tighter mb-10">Consejos para un despiece profesional</h2>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                 <div className="space-y-4">
+                   <div className="text-3xl font-black text-natural-accent">01</div>
+                   <h5 className="font-black text-natural-primary uppercase text-sm">Considera el espesor del disco</h5>
+                   <p className="text-sm text-natural-secondary leading-relaxed">
+                     Al planificar cortes, siempre incluimos el margen del disco de sierra. Un descuido en esto puede significar que la última pieza sea varios milímetros más pequeña de lo requerido.
+                   </p>
+                 </div>
+                 <div className="space-y-4">
+                   <div className="text-3xl font-black text-natural-accent">02</div>
+                   <h5 className="font-black text-natural-primary uppercase text-sm">Dirección de la veta</h5>
+                   <p className="text-sm text-natural-secondary leading-relaxed">
+                     Para acabados como cerezo o roble, la dirección de la veta es crítica. Asegúrate de que los laterales y puertas tengan la veta en sentido vertical para una estética equilibrada.
+                   </p>
+                 </div>
+                 <div className="space-y-4">
+                   <div className="text-3xl font-black text-natural-accent">03</div>
+                   <h5 className="font-black text-natural-primary uppercase text-sm">Zócalos y Estabilidad</h5>
+                   <p className="text-sm text-natural-secondary leading-relaxed">
+                     Nunca omitas un zócalo en muebles pesados. No solo protege la madera de la humedad del suelo, sino que proporciona un punto de apoyo estructural para los laterales de carga.
+                   </p>
+                 </div>
+               </div>
+            </div>
+
+            <div className="space-y-12">
+               <h2 className="text-5xl font-black text-natural-primary italic tracking-tighter text-center">La evolución de la carpintería digital</h2>
+               <div className="space-y-8 max-w-3xl mx-auto">
+                 <p className="text-lg text-natural-secondary font-medium leading-relaxed text-center">
+                   El futuro de la fabricación de muebles reside en la automatización de procesos repetitivos para que el artesano pueda concentrarse en lo importante: el detalle y el ensamblaje. Cortex está diseñado para ser ese puente.
+                 </p>
+                 <p className="text-lg text-natural-secondary font-medium leading-relaxed text-center">
+                   Desde estanterías flotantes hasta muebles aéreos complejos, la lógica detrás de cada cálculo en nuestra app ha sido refinada para reflejar la realidad del taller. Entendemos que un despiece no es solo una lista de números, es el ADN de tu creación.
+                 </p>
+               </div>
+            </div>
+          </section>
 
           <section className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-10">
             <div className="p-10 bg-white rounded-[3rem] border border-natural-border shadow-md space-y-6">
@@ -388,21 +551,26 @@ export default function App() {
 
           {/* Espacio para AdSense en Landing */}
           <div className="mt-40 w-full p-20 bg-natural-border/20 rounded-[4rem] text-center border border-dashed border-natural-border">
-             <p className="text-[10px] font-black uppercase tracking-widest text-natural-secondary mb-8">Información Importante</p>
+             <p className="text-[10px] font-black uppercase tracking-widest text-natural-secondary mb-8">Anuncio Informativo</p>
              <div className="max-w-3xl mx-auto space-y-6">
                <p className="text-lg text-natural-primary font-bold italic">
-                 Al utilizar nuestra plataforma, aceptas que el procesamiento de datos se realiza localmente para garantizar tu privacidad.
+                 Al utilizar nuestra plataforma, apoyas el desarrollo continuo de herramientas gratuitas para toda la comunidad de carpintería y diseño.
                </p>
-               <div className="w-full h-[250px] bg-white border border-natural-border rounded-3xl flex items-center justify-center shadow-sm">
-                  <span className="text-[10px] uppercase font-black tracking-widest text-natural-muted">Espacio Publicitario de Google Adsense</span>
+               <div className="w-full h-[280px] bg-white border border-natural-border rounded-3xl flex items-center justify-center shadow-sm">
+                  <span className="text-[10px] uppercase font-black tracking-widest text-natural-muted">Publicidad Relevante &bull; Espacio Google Adsense</span>
                </div>
              </div>
           </div>
           
-          <footer className="mt-40 text-center pb-20">
-             <div className="flex items-center justify-center gap-4 mb-4">
+          <footer className="mt-40 text-center pb-20 space-y-6">
+             <div className="flex items-center justify-center gap-10">
+                <button onClick={() => setView('landing')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary">Inicio</button>
+                <button onClick={() => setView('about')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary">Quiénes Somos</button>
+                <button onClick={() => setView('app')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary">Optimizador</button>
+             </div>
+             <div className="flex items-center justify-center gap-4">
                 <Box className="w-6 h-6 text-natural-primary opacity-30" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-natural-secondary">Cortex Optimice 2026 &bull; Diseñado para la Industria Madera</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-natural-secondary">Cortex Optimice 2026 &bull; Potenciando la Imaginación en Madera</span>
              </div>
           </footer>
         </main>
@@ -526,13 +694,20 @@ export default function App() {
           <>
             {/* Header */}
             <header className="h-20 border-b border-natural-border bg-white flex items-center justify-between px-8 shadow-sm z-10">
-              <div className="flex items-center gap-3">
-                <Input 
-                  value={currentProject.name} 
-                  onChange={(e) => updateCurrentProject({...currentProject, name: e.target.value})}
-                  className="border-none shadow-none text-xl font-bold p-0 focus-visible:ring-0 w-auto min-w-[200px] bg-transparent text-natural-text placeholder:text-natural-secondary/50 font-display"
-                  placeholder="Nombre del Proyecto..."
-                />
+              <div className="flex items-center gap-10">
+                <div className="flex items-center gap-3">
+                  <Input 
+                    value={currentProject.name} 
+                    onChange={(e) => updateCurrentProject({...currentProject, name: e.target.value})}
+                    className="border-none shadow-none text-xl font-bold p-0 focus-visible:ring-0 w-auto min-w-[200px] bg-transparent text-natural-text placeholder:text-natural-secondary/50 font-display"
+                    placeholder="Nombre del Proyecto..."
+                  />
+                </div>
+                <Separator orientation="vertical" className="h-6 bg-natural-divider" />
+                <div className="flex items-center gap-6">
+                  <button onClick={() => setView('landing')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary transition-colors">Volver al Inicio</button>
+                  <button onClick={() => setView('about')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary transition-colors">Quiénes Somos</button>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <Button variant="outline" size="sm" onClick={handleExport} className="border-natural-border hover:bg-natural-muted rounded-lg font-medium text-natural-text">
