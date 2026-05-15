@@ -29,11 +29,12 @@ export interface Project {
 
 export interface CabinetItem {
   id: string;
-  type: 'base' | 'wall' | 'closet' | 'custom' | 'shelving';
+  type: 'base' | 'wall' | 'closet' | 'custom' | 'shelving' | 'modern-shelf' | 'stepped-shelf';
   name: string;
   dimensions: CabinetDimensions;
   parts: Part[];
   shelfPositions?: number[]; // Heights from base for each shelf
+  modernShelfWidths?: number[]; // Widths for modern shelf parts
 }
 
 export interface Sheet {

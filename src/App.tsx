@@ -15,7 +15,8 @@ import {
   Dna,
   Maximize2,
   Rows,
-  ArrowRight
+  ArrowRight,
+  LayoutPanelTop
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -25,7 +26,13 @@ import {
   Part, 
   CuttingPlan 
 } from './types/furniture';
-import { calculateBaseCabinetParts, calculateWallCabinetParts, calculateShelvingParts } from './lib/cabinet-logic';
+import { 
+  calculateBaseCabinetParts, 
+  calculateWallCabinetParts, 
+  calculateShelvingParts, 
+  calculateModernShelfParts,
+  calculateSteppedShelfParts
+} from './lib/cabinet-logic';
 import { optimizeNesting } from './lib/nesting-logic';
 import { ThreeDView } from './components/ThreeDView';
 import { CuttingPlanView } from './components/CuttingPlanView';
@@ -65,6 +72,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'editor' | 'despiece' | 'cortex' | 'assembly'>('editor');
   const [selectedSheetType, setSelectedSheetType] = useState<'full' | 'half'>('full');
   const [selectedColor, setSelectedColor] = useState<string>('#FFFFFF');
+  const [wireframeMode, setWireframeMode] = useState<boolean>(false);
 
   const FINISH_COLORS = [
     { name: 'Blanco', hex: '#FFFFFF' },
@@ -141,6 +149,55 @@ export default function App() {
       
       updateCurrentProject(updated);
       return;
+    } else if (type === 'modern-shelf') {
+      const modernDims = { width: 680, height: 1200, depth: 290, thickness: 15 };
+      const defaultWidths = [
+        1200 * 0.75, // Lateral Derecho Parcial
+        500,         // Techo Parcial
+        500,         // Repisa 1
+        500          // Repisa 2
+      ];
+      parts = calculateModernShelfParts(modernDims, defaultWidths);
+      name = 'Estante Moderno ZigZag';
+      
+      const newItem: CabinetItem = {
+        id: crypto.randomUUID(),
+        type,
+        name: `${name} ${currentProject.items.length + 1}`,
+        dimensions: modernDims,
+        parts,
+        modernShelfWidths: defaultWidths
+      };
+
+      const updated = {
+        ...currentProject,
+        items: [...currentProject.items, newItem],
+        updatedAt: Date.now()
+      };
+      
+      updateCurrentProject(updated);
+      return;
+    } else if (type === 'stepped-shelf') {
+      const steppedDims = { width: 900, height: 900, depth: 300, thickness: 15 };
+      parts = calculateSteppedShelfParts(steppedDims);
+      name = 'Estante Escalinata';
+      
+      const newItem: CabinetItem = {
+        id: crypto.randomUUID(),
+        type,
+        name: `${name} ${currentProject.items.length + 1}`,
+        dimensions: steppedDims,
+        parts
+      };
+
+      const updated = {
+        ...currentProject,
+        items: [...currentProject.items, newItem],
+        updatedAt: Date.now()
+      };
+      
+      updateCurrentProject(updated);
+      return;
     }
 
     const newItem: CabinetItem = {
@@ -187,6 +244,12 @@ export default function App() {
           // Keep the same number of shelves as before
           const positions = item.shelfPositions || [];
           newParts = calculateShelvingParts(newDims, positions);
+        }
+        if (item.type === 'modern-shelf') {
+          newParts = calculateModernShelfParts(newDims, item.modernShelfWidths);
+        }
+        if (item.type === 'stepped-shelf') {
+          newParts = calculateSteppedShelfParts(newDims);
         }
         
         return {
@@ -245,6 +308,20 @@ export default function App() {
         const newPositions = item.shelfPositions.filter((_, i) => i !== index);
         const newParts = calculateShelvingParts(item.dimensions, newPositions);
         return { ...item, shelfPositions: newPositions, parts: newParts };
+      }
+      return item;
+    });
+    updateCurrentProject({ ...currentProject, items: updatedItems, updatedAt: Date.now() });
+  };
+
+  const handleUpdateModernWidth = (itemId: string, index: number, value: number) => {
+    if (!currentProject) return;
+    const updatedItems = currentProject.items.map(item => {
+      if (item.id === itemId && item.modernShelfWidths) {
+        const newWidths = [...item.modernShelfWidths];
+        newWidths[index] = value;
+        const newParts = calculateModernShelfParts(item.dimensions, newWidths);
+        return { ...item, modernShelfWidths: newWidths, parts: newParts };
       }
       return item;
     });
@@ -778,6 +855,24 @@ export default function App() {
                                 </div>
                                 <span className="text-xs font-bold uppercase tracking-tight">Estantería / Librero</span>
                               </button>
+                              <button 
+                                onClick={() => handleAddItem('modern-shelf')}
+                                className="flex flex-col items-center justify-center h-28 gap-3 border border-natural-border rounded-2xl bg-natural-muted/50 hover:bg-natural-accent/20 hover:border-natural-primary/50 transition-all group col-span-2"
+                              >
+                                <div className="p-3 bg-white rounded-xl shadow-sm text-natural-primary group-hover:scale-110 transition-transform">
+                                  <Dna className="w-6 h-6" />
+                                </div>
+                                <span className="text-xs font-bold uppercase tracking-tight">Estante Moderno Zig-Zag</span>
+                              </button>
+                              <button 
+                                onClick={() => handleAddItem('stepped-shelf')}
+                                className="flex flex-col items-center justify-center h-28 gap-3 border border-natural-border rounded-2xl bg-natural-muted/50 hover:bg-natural-accent/20 hover:border-natural-primary/50 transition-all group col-span-2 md:col-span-1"
+                              >
+                                <div className="p-3 bg-white rounded-xl shadow-sm text-natural-primary group-hover:scale-110 transition-transform">
+                                  <LayoutPanelTop className="w-6 h-6" />
+                                </div>
+                                <span className="text-xs font-bold uppercase tracking-tight text-center">Escalinata (6 Cubos)</span>
+                              </button>
                             </div>
                           </div>
 
@@ -803,7 +898,7 @@ export default function App() {
                                       <CardHeader className="p-4 bg-natural-muted/40 border-b border-natural-divider flex flex-row items-center justify-between space-y-0">
                                         <div className="flex items-center gap-3">
                                           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-natural-primary border border-natural-border shadow-xs">
-                                            {item.type === 'base' ? <Box className="w-4 h-4" /> : item.type === 'shelving' ? <Rows className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                                            {item.type === 'base' ? <Box className="w-4 h-4" /> : item.type === 'shelving' ? <Rows className="w-4 h-4" /> : item.type === 'modern-shelf' ? <Dna className="w-4 h-4" /> : item.type === 'stepped-shelf' ? <LayoutPanelTop className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                                           </div>
                                           <CardTitle className="text-sm font-bold uppercase tracking-tight">{item.name}</CardTitle>
                                         </div>
@@ -866,6 +961,52 @@ export default function App() {
                                             </div>
                                           </div>
                                         )}
+
+                                        {item.type === 'modern-shelf' && item.modernShelfWidths && (
+                                          <div className="col-span-3 mt-4 flex flex-col gap-4">
+                                            <div className="flex items-center justify-between px-1">
+                                              <Label className="text-[9px] uppercase font-bold text-natural-secondary tracking-widest">Dimensiones de Piezas (mm)</Label>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                              <div className="flex flex-col gap-1.5">
+                                                <Label className="text-[8px] uppercase font-bold text-natural-secondary opacity-60">Lateral Der. (Alto)</Label>
+                                                <Input 
+                                                  type="number" 
+                                                  className="h-8 text-xs px-2 bg-natural-muted/30 border-natural-border rounded-lg font-mono"
+                                                  value={item.modernShelfWidths?.[0]} 
+                                                  onChange={(e) => handleUpdateModernWidth(item.id, 0, Number(e.target.value))}
+                                                />
+                                              </div>
+                                              <div className="flex flex-col gap-1.5">
+                                                <Label className="text-[8px] uppercase font-bold text-natural-secondary opacity-60">Techo (Ancho)</Label>
+                                                <Input 
+                                                  type="number" 
+                                                  className="h-8 text-xs px-2 bg-natural-muted/30 border-natural-border rounded-lg font-mono"
+                                                  value={item.modernShelfWidths?.[1]} 
+                                                  onChange={(e) => handleUpdateModernWidth(item.id, 1, Number(e.target.value))}
+                                                />
+                                              </div>
+                                              <div className="flex flex-col gap-1.5">
+                                                <Label className="text-[8px] uppercase font-bold text-natural-secondary opacity-60">Repisa 1 (Ancho)</Label>
+                                                <Input 
+                                                  type="number" 
+                                                  className="h-8 text-xs px-2 bg-natural-muted/30 border-natural-border rounded-lg font-mono"
+                                                  value={item.modernShelfWidths?.[2]} 
+                                                  onChange={(e) => handleUpdateModernWidth(item.id, 2, Number(e.target.value))}
+                                                />
+                                              </div>
+                                              <div className="flex flex-col gap-1.5">
+                                                <Label className="text-[8px] uppercase font-bold text-natural-secondary opacity-60">Repisa 2 (Ancho)</Label>
+                                                <Input 
+                                                  type="number" 
+                                                  className="h-8 text-xs px-2 bg-natural-muted/30 border-natural-border rounded-lg font-mono"
+                                                  value={item.modernShelfWidths?.[3]} 
+                                                  onChange={(e) => handleUpdateModernWidth(item.id, 3, Number(e.target.value))}
+                                                />
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
                                       </CardContent>
                                     </Card>
                                   </motion.div>
@@ -884,16 +1025,26 @@ export default function App() {
                               <div className="w-full h-full rounded-[2rem] border border-natural-border bg-white shadow-xl overflow-hidden relative">
                                 <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
                                   <span className="px-3 py-1 bg-natural-muted border border-natural-border rounded-full text-[10px] font-bold uppercase tracking-widest text-natural-primary w-fit">Vista Previa 3D</span>
-                                  <div className="flex gap-1.5 p-1.5 bg-white/80 backdrop-blur border border-natural-divider rounded-xl shadow-sm">
-                                    {FINISH_COLORS.map(c => (
-                                      <button
-                                        key={c.hex}
-                                        onClick={() => setSelectedColor(c.hex)}
-                                        className={`w-6 h-6 rounded-md border transition-all ${selectedColor === c.hex ? 'border-natural-primary scale-110 shadow-md' : 'border-natural-border hover:scale-105'}`}
-                                        style={{ backgroundColor: c.hex }}
-                                        title={c.name}
-                                      />
-                                    ))}
+                                  <div className="flex gap-2">
+                                    <div className="flex gap-1.5 p-1.5 bg-white/80 backdrop-blur border border-natural-divider rounded-xl shadow-sm">
+                                      {FINISH_COLORS.map(c => (
+                                        <button
+                                          key={c.hex}
+                                          onClick={() => setSelectedColor(c.hex)}
+                                          className={`w-6 h-6 rounded-md border transition-all ${selectedColor === c.hex ? 'border-natural-primary scale-110 shadow-md' : 'border-natural-border hover:scale-105'}`}
+                                          style={{ backgroundColor: c.hex }}
+                                          title={c.name}
+                                        />
+                                      ))}
+                                    </div>
+                                    <button
+                                      onClick={() => setWireframeMode(!wireframeMode)}
+                                      className={`p-1.5 rounded-xl border transition-all flex items-center justify-center gap-2 px-3 ${wireframeMode ? 'bg-natural-primary text-white border-natural-primary shadow-md' : 'bg-white/80 backdrop-blur border-natural-divider text-natural-primary hover:bg-natural-muted'}`}
+                                      title="Toggle Wireframe"
+                                    >
+                                      <div className={`w-4 h-4 border-2 rounded ${wireframeMode ? 'border-white' : 'border-natural-primary'}`} style={{ borderStyle: 'dashed' }} />
+                                      <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Estructura</span>
+                                    </button>
                                   </div>
                                 </div>
                                 <ThreeDView 
@@ -902,6 +1053,7 @@ export default function App() {
                                   parts={currentProject.items[0].parts}
                                   shelfPositions={currentProject.items[0].shelfPositions}
                                   finishColor={selectedColor}
+                                  wireframe={wireframeMode}
                                  />
                                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-10 px-8 py-3 bg-white/90 backdrop-blur border border-natural-border rounded-2xl shadow-lg">
                                     <div className="flex flex-col items-center">
