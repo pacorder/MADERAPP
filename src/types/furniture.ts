@@ -35,6 +35,7 @@ export interface CabinetItem {
   parts: Part[];
   shelfPositions?: number[]; // Heights from base for each shelf
   modernShelfWidths?: number[]; // Widths for modern shelf parts
+  steppedShelfParams?: number[]; // Widths for cubes or tiers
 }
 
 export interface Sheet {

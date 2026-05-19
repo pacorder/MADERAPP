@@ -48,12 +48,14 @@ interface FurnitureModelProps {
   dimensions: CabinetDimensions;
   parts: Part[];
   shelfPositions?: number[];
+  modernShelfWidths?: number[];
+  steppedShelfParams?: number[];
   finishColor?: string;
   isAssembly?: boolean;
   wireframe?: boolean;
 }
 
-const FurnitureModel: React.FC<FurnitureModelProps> = ({ type, dimensions, parts, shelfPositions, finishColor, isAssembly, wireframe }) => {
+const FurnitureModel: React.FC<FurnitureModelProps> = ({ type, dimensions, parts, shelfPositions, modernShelfWidths, steppedShelfParams, finishColor, isAssembly, wireframe }) => {
   const { width, height, depth, thickness } = dimensions;
   const w = width / 1000;
   const h = height / 1000;
@@ -64,6 +66,7 @@ const FurnitureModel: React.FC<FurnitureModelProps> = ({ type, dimensions, parts
   return (
     <group position={[0, h/2, 0]}>
       {parts.map(part => {
+        // ... (Modern Shelf logic stays)
         if (part.name.includes('Lateral Moderno Izquierdo')) {
           return <PartMesh key={part.id} part={part} position={[-w/2 + t/2, 0, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
         }
@@ -89,38 +92,39 @@ const FurnitureModel: React.FC<FurnitureModelProps> = ({ type, dimensions, parts
           const pw = part.width / 1000;
           return <PartMesh key={part.id} part={part} position={[-w/2 + t + pw/2, 0.2, t/2]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
         }
-        // Stepped Shelf positioning
-        if (part.name === 'Base Escalinata') {
-          return <PartMesh key={part.id} part={part} position={[0, -h/2 + t/2, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
-        }
-        if (part.name === 'Repisa Escalinata L1') {
-          const sH = (height - 4 * thickness) / 3 / 1000;
-          return <PartMesh key={part.id} part={part} position={[0, -h/2 + sH + 1.5*t, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
-        }
-        if (part.name === 'Repisa Escalinata L2') {
-          const sH = (height - 4 * thickness) / 3 / 1000;
-          const pw = part.width / 1000;
-          return <PartMesh key={part.id} part={part} position={[-w/2 + pw/2 + t, -h/2 + 2*sH + 2.5*t, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
-        }
-        if (part.name === 'Techo Escalinata') {
-          const pw = part.width / 1000;
-          return <PartMesh key={part.id} part={part} position={[-w/2 + pw/2 + t, h/2 - t/2, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
-        }
-        if (part.name === 'Lateral Escalinata V0') {
-          return <PartMesh key={part.id} part={part} position={[-w/2 + t/2, 0, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
-        }
-        if (part.name === 'Lateral Escalinata V1') {
-          const sW = (width - 4 * thickness) / 3 / 1000;
-          return <PartMesh key={part.id} part={part} position={[-w/2 + sW + 1.5*t, 0, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
-        }
-        if (part.name === 'Lateral Escalinata V2') {
-          const sW = (width - 4 * thickness) / 3 / 1000;
-          const ph = part.height / 1000;
-          return <PartMesh key={part.id} part={part} position={[-w/2 + 2*sW + 2.5*t, -h/2 + ph/2, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
-        }
-        if (part.name === 'Lateral Escalinata V3') {
-          const ph = part.height / 1000;
-          return <PartMesh key={part.id} part={part} position={[w/2 - t/2, -h/2 + ph/2, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+
+        // Stepped Shelf positioning logic
+        if (type === 'stepped-shelf' && steppedShelfParams) {
+          const [c1, c2, c3, r1, r2, r3] = steppedShelfParams.map(v => v / 1000);
+          
+          if (part.name === 'Base Escalinata') {
+            return <PartMesh key={part.id} part={part} position={[0, -h/2 + t/2, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
+          if (part.name === 'Repisa Escalinata L1') {
+            return <PartMesh key={part.id} part={part} position={[0, -h/2 + t + r1 + t/2, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
+          if (part.name === 'Repisa Escalinata L2') {
+            const pw = part.width / 1000;
+            return <PartMesh key={part.id} part={part} position={[-w/2 + t + pw/2, -h/2 + t + r1 + t + r2 + t/2, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
+          if (part.name === 'Techo Escalinata') {
+            const pw = part.width / 1000;
+            return <PartMesh key={part.id} part={part} position={[-w/2 + t + pw/2, -h/2 + t + r1 + t + r2 + t + r3 + t/2, 0]} rotation={[Math.PI/2, 0, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
+          if (part.name === 'Lateral Escalinata V0') {
+            return <PartMesh key={part.id} part={part} position={[-w/2 + t/2, 0, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
+          if (part.name === 'Lateral Escalinata V1') {
+            return <PartMesh key={part.id} part={part} position={[-w/2 + t + c1 + t/2, 0, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
+          if (part.name === 'Lateral Escalinata V2') {
+            const ph = part.height / 1000;
+            return <PartMesh key={part.id} part={part} position={[-w/2 + t + c1 + t + c2 + t/2, -h/2 + ph/2, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
+          if (part.name === 'Lateral Escalinata V3') {
+            const ph = part.height / 1000;
+            return <PartMesh key={part.id} part={part} position={[w/2 - t/2, -h/2 + ph/2, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
+          }
         }
         if (part.name.includes('Lateral Izquierdo')) {
           return <PartMesh key={part.id} part={part} position={[-w/2 + t/2, 0, 0]} rotation={[0, Math.PI/2, 0]} color={finishColor} isAssembly={isAssembly} wireframe={wireframe} />;
