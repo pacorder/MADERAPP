@@ -73,6 +73,8 @@ export default function App() {
   const [selectedSheetType, setSelectedSheetType] = useState<'full' | 'half'>('full');
   const [selectedColor, setSelectedColor] = useState<string>('#FFFFFF');
   const [wireframeMode, setWireframeMode] = useState<boolean>(false);
+  const [assemblyWireframe, setAssemblyWireframe] = useState<boolean>(true);
+  const [assemblyShowLabels, setAssemblyShowLabels] = useState<boolean>(true);
   const [landingColor, setLandingColor] = useState<string>('#B8977E');
   const [landingWireframe, setLandingWireframe] = useState<boolean>(false);
 
@@ -1514,7 +1516,9 @@ export default function App() {
                         </div>
                         <div className="flex items-center gap-3 px-6 py-3 bg-natural-muted border border-natural-border rounded-2xl shadow-sm">
                            <Layout className="w-5 h-5 text-natural-primary" />
-                           <span className="text-[10px] font-black text-natural-primary uppercase tracking-widest">Vista Estructural (Wireframe)</span>
+                           <span className="text-[10px] font-black text-natural-primary uppercase tracking-widest">
+                             {assemblyWireframe ? 'Vista Alámbrica' : 'Vista Sólida'}
+                           </span>
                         </div>
                       </div>
 
@@ -1529,12 +1533,45 @@ export default function App() {
                                modernShelfWidths={currentProject.items[0].modernShelfWidths}
                                steppedShelfParams={currentProject.items[0].steppedShelfParams}
                                isAssembly={true}
+                               wireframe={assemblyWireframe}
+                               showLabels={assemblyShowLabels}
+                               finishColor={selectedColor}
                              />
-                             <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur border border-natural-border px-4 py-2 rounded-xl shadow-sm">
-                               <p className="text-[10px] font-black uppercase text-natural-primary mb-1">Modo de Visualización</p>
-                               <div className="flex items-center gap-2">
-                                 <div className="w-2 h-2 rounded-full bg-natural-primary animate-pulse" />
-                                 <span className="text-[10px] font-bold text-natural-secondary">Esquema Alámbrico de Alta Precisión</span>
+                             <div className="absolute top-6 left-6 z-10 flex flex-col sm:flex-row gap-3 bg-white/95 backdrop-blur-md border border-natural-border/70 p-3.5 rounded-2xl shadow-xl animate-fade-in">
+                               <div className="flex flex-col pr-3 sm:border-r border-natural-border/35">
+                                 <p className="text-[9px] font-black uppercase text-natural-secondary tracking-widest leading-none">MODO DE VISTA</p>
+                                 <div className="flex items-center gap-1.5 mt-2">
+                                   <button
+                                     onClick={() => setAssemblyWireframe(false)}
+                                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 ${!assemblyWireframe ? 'bg-natural-primary text-white shadow-sm scale-102' : 'bg-natural-muted hover:bg-natural-primary/5 text-natural-secondary hover:text-natural-primary'}`}
+                                   >
+                                     Sólido
+                                   </button>
+                                   <button
+                                     onClick={() => setAssemblyWireframe(true)}
+                                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 ${assemblyWireframe ? 'bg-natural-primary text-white shadow-sm scale-102' : 'bg-natural-muted hover:bg-natural-primary/5 text-natural-secondary hover:text-natural-primary'}`}
+                                   >
+                                     Estructura
+                                   </button>
+                                 </div>
+                               </div>
+
+                               <div className="flex flex-col">
+                                 <p className="text-[9px] font-black uppercase text-natural-secondary tracking-widest leading-none">ETIQUETADO 3D</p>
+                                 <div className="flex items-center gap-1.5 mt-2">
+                                   <button
+                                     onClick={() => setAssemblyShowLabels(true)}
+                                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 ${assemblyShowLabels ? 'bg-natural-primary text-white shadow-sm scale-102' : 'bg-natural-muted hover:bg-natural-primary/5 text-natural-secondary hover:text-natural-primary'}`}
+                                   >
+                                     Medidas
+                                   </button>
+                                   <button
+                                     onClick={() => setAssemblyShowLabels(false)}
+                                     className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 ${!assemblyShowLabels ? 'bg-natural-primary text-white shadow-sm scale-102' : 'bg-natural-muted hover:bg-natural-primary/5 text-natural-secondary hover:text-natural-primary'}`}
+                                   >
+                                     Ocultar
+                                   </button>
+                                 </div>
                                </div>
                              </div>
                           </>
