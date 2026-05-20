@@ -73,6 +73,26 @@ export default function App() {
   const [selectedSheetType, setSelectedSheetType] = useState<'full' | 'half'>('full');
   const [selectedColor, setSelectedColor] = useState<string>('#FFFFFF');
   const [wireframeMode, setWireframeMode] = useState<boolean>(false);
+  const [landingColor, setLandingColor] = useState<string>('#B8977E');
+  const [landingWireframe, setLandingWireframe] = useState<boolean>(false);
+
+  const landingDemoItem = useMemo(() => {
+    const steppedDims = { width: 900, height: 900, depth: 300, thickness: 15 };
+    const defaultParams = [
+      (900 - 4 * 15) / 3, // Col 1
+      (900 - 4 * 15) / 3, // Col 2
+      (900 - 4 * 15) / 3, // Col 3
+      (900 - 4 * 15) / 3, // Tier 1
+      (900 - 4 * 15) / 3, // Tier 2
+      (900 - 4 * 15) / 3  // Tier 3
+    ];
+    return {
+      type: 'stepped-shelf',
+      dimensions: steppedDims,
+      parts: calculateSteppedShelfParts(steppedDims, defaultParams),
+      steppedShelfParams: defaultParams
+    };
+  }, []);
 
   const FINISH_COLORS = [
     { name: 'Blanco', hex: '#FFFFFF' },
@@ -511,8 +531,138 @@ export default function App() {
                 <div className="relative w-full h-full">
                   <div className="absolute top-10 right-10 w-40 h-40 bg-natural-accent rounded-3xl opacity-10 blur-3xl animate-pulse" />
                   <div className="absolute bottom-10 left-10 w-60 h-60 bg-natural-primary rounded-full opacity-5 blur-3xl" />
-                  <div className="relative z-10 w-full h-full flex items-center justify-center">
-                    <Box className="w-48 h-48 text-natural-primary opacity-20" />
+                  <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                    {/* Tarjetas de Estadísticas Elevadas */}
+                    <div className="grid grid-cols-3 gap-2 pb-3 mb-1">
+                      <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-natural-border/60 shadow-xs flex flex-col">
+                        <span className="text-[8px] font-black uppercase text-natural-secondary tracking-widest leading-none">Rendimiento</span>
+                        <div className="flex items-baseline gap-1 mt-1">
+                          <span className="text-base font-black text-natural-primary leading-none">95.4%</span>
+                          <span className="text-[8px] text-green-600 font-bold leading-none">↑</span>
+                        </div>
+                      </div>
+                      <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-natural-border/60 shadow-xs flex flex-col">
+                        <span className="text-[8px] font-black uppercase text-natural-secondary tracking-widest leading-none">Cortes</span>
+                        <div className="flex items-baseline gap-1 mt-1 font-mono">
+                          <span className="text-base font-black text-natural-primary leading-none">18</span>
+                        </div>
+                      </div>
+                      <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-natural-border/60 shadow-xs flex flex-col">
+                        <span className="text-[8px] font-black uppercase text-natural-secondary tracking-widest leading-none">Merma</span>
+                        <div className="flex items-baseline gap-1 mt-1 font-mono">
+                          <span className="text-base font-black text-natural-secondary leading-none">4.6%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* El Diagrama SVG Interactivo de Corte */}
+                    <div className="bg-natural-muted border border-natural-border rounded-3xl p-3 shadow-inner flex-1 flex items-center justify-center relative overflow-hidden group">
+                      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#6B705C 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                      
+                      <svg viewBox="0 0 540 340" className="w-full h-full select-none relative z-10">
+                        {/* Dimensión de Plancha (Líneas de Cota) */}
+                        <defs>
+                          <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#A5A58D" />
+                          </marker>
+                        </defs>
+
+                        {/* Cotas Externas */}
+                        <g opacity="0.75" className="text-[9px] font-mono font-bold fill-natural-secondary">
+                          {/* Cota Horizontal Superior */}
+                          <line x1="40" y1="20" x2="500" y2="20" stroke="#A5A58D" strokeWidth="1" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
+                          <rect x="240" y="10" width="60" height="18" fill="#FAF9F6" rx="4" />
+                          <text x="270" y="22" textAnchor="middle">2440 mm</text>
+
+                          {/* Cota Vertical Izquierda */}
+                          <line x1="20" y1="40" x2="20" y2="300" stroke="#A5A58D" strokeWidth="1" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
+                          <g transform="translate(10, 170) rotate(-90)">
+                            <rect x="-30" y="-8" width="60" height="18" fill="#FAF9F6" rx="4" />
+                            <text x="0" y="4" textAnchor="middle">1830 mm</text>
+                          </g>
+                        </g>
+
+                        {/* Plancha Base (Tablero de Madera) */}
+                        <rect x="40" y="40" width="460" height="260" rx="4" fill="#E5E1D8" stroke="#A5A58D" strokeWidth="2" strokeDasharray="1,1" />
+
+                        {/* Grupo de Piezas en Nesting */}
+                        <g>
+                          {/* Pieza 1: Lateral Izquierdo */}
+                          <g className="cursor-pointer group/part">
+                            <rect x="42" y="42" width="120" height="256" rx="3" fill="#6B705C" fillOpacity="0.85" stroke="#FAF9F6" strokeWidth="1.5" className="hover:fill-opacity-100 transition-all shadow-sm" />
+                            <text x="102" y="150" textAnchor="middle" fill="#FFFFFF" className="text-[9px] font-bold pointer-events-none">Lateral Izq.</text>
+                            <text x="102" y="165" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.8" className="text-[8px] font-mono pointer-events-none">900 x 300 mm</text>
+                          </g>
+
+                          {/* Pieza 2: Lateral Derecho */}
+                          <g className="cursor-pointer group/part">
+                            <rect x="164" y="42" width="120" height="256" rx="3" fill="#6B705C" fillOpacity="0.85" stroke="#FAF9F6" strokeWidth="1.5" className="hover:fill-opacity-100 transition-all shadow-sm" />
+                            <text x="224" y="150" textAnchor="middle" fill="#FFFFFF" className="text-[9px] font-bold pointer-events-none">Lateral Der.</text>
+                            <text x="224" y="165" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.8" className="text-[8px] font-mono pointer-events-none">900 x 300 mm</text>
+                          </g>
+
+                          {/* Pieza 3: Cubo / Base */}
+                          <g className="cursor-pointer group/part">
+                            <rect x="286" y="42" width="212" height="76" rx="3" fill="#A5A58D" fillOpacity="0.85" stroke="#FAF9F6" strokeWidth="1.5" className="hover:fill-opacity-100 transition-all shadow-sm" />
+                            <text x="392" y="75" textAnchor="middle" fill="#FFFFFF" className="text-[9px] font-bold pointer-events-none">Techo / Cobertor</text>
+                            <text x="392" y="88" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.8" className="text-[8px] font-mono pointer-events-none">840 x 300 mm</text>
+                          </g>
+
+                          {/* Pieza 4: Repisa L1 */}
+                          <g className="cursor-pointer group/part">
+                            <rect x="286" y="120" width="212" height="76" rx="3" fill="#A5A58D" fillOpacity="0.85" stroke="#FAF9F6" strokeWidth="1.5" className="hover:fill-opacity-100 transition-all shadow-sm" />
+                            <text x="392" y="153" textAnchor="middle" fill="#FFFFFF" className="text-[9px] font-bold pointer-events-none">Repisa L1</text>
+                            <text x="392" y="166" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.8" className="text-[8px] font-mono pointer-events-none">840 x 300 mm</text>
+                          </g>
+
+                          {/* Pieza 5: Zócalo A */}
+                          <g className="cursor-pointer group/part">
+                            <rect x="286" y="198" width="104" height="36" rx="3" fill="#D6CEBE" fillOpacity="0.9" stroke="#FAF9F6" strokeWidth="1.5" className="hover:fill-opacity-100 transition-all shadow-sm" />
+                            <text x="338" y="218" textAnchor="middle" fill="#6B705C" className="text-[8px] font-black pointer-events-none">Zócalo A</text>
+                            <text x="338" y="228" textAnchor="middle" fill="#6B705C" fillOpacity="0.8" className="text-[6.5px] font-mono pointer-events-none">450x120</text>
+                          </g>
+
+                          {/* Pieza 6: Zócalo B */}
+                          <g className="cursor-pointer group/part">
+                            <rect x="392" y="198" width="106" height="36" rx="3" fill="#D6CEBE" fillOpacity="0.9" stroke="#FAF9F6" strokeWidth="1.5" className="hover:fill-opacity-100 transition-all shadow-sm" />
+                            <text x="445" y="218" textAnchor="middle" fill="#6B705C" className="text-[8px] font-black pointer-events-none">Zócalo B</text>
+                            <text x="445" y="228" textAnchor="middle" fill="#6B705C" fillOpacity="0.8" className="text-[6.5px] font-mono pointer-events-none">450x120</text>
+                          </g>
+
+                          {/* Pieza 7: Amarre Superior */}
+                          <g className="cursor-pointer group/part">
+                            <rect x="286" y="236" width="150" height="26" rx="3" fill="#FAF9F6" stroke="#A5A58D" strokeWidth="1.5" className="hover:bg-natural-accent transition-all shadow-sm" />
+                            <text x="361" y="252" textAnchor="middle" fill="#6B705C" className="text-[8px] font-black pointer-events-none">Amarre Sup.</text>
+                          </g>
+
+                          {/* Retazo / Sobrante No Utilizado */}
+                          <g opacity="0.6">
+                            <rect x="438" y="236" width="60" height="60" rx="3" fill="none" stroke="#A5A58D" strokeWidth="1" strokeDasharray="3,3" />
+                            <text x="468" y="266" textAnchor="middle" fill="#A5A58D" className="text-[8px] font-mono font-bold leading-none pointer-events-none">RETAZO</text>
+                            <text x="468" y="276" textAnchor="middle" fill="#A5A58D" className="text-[7px] font-mono leading-none pointer-events-none">4.6%</text>
+                          </g>
+                        </g>
+
+                        {/* Líneas de Corte de Sierra Simulación */}
+                        <line x1="163" y1="40" x2="163" y2="296" stroke="#D6CEBE" strokeWidth="1.5" strokeDasharray="4,4" />
+                        <line x1="285" y1="40" x2="285" y2="296" stroke="#D6CEBE" strokeWidth="1.5" strokeDasharray="4,4" />
+                        <line x1="285" y1="119" x2="498" y2="119" stroke="#D6CEBE" strokeWidth="1.5" strokeDasharray="4,4" />
+                        <line x1="285" y1="197" x2="498" y2="197" stroke="#D6CEBE" strokeWidth="1.5" strokeDasharray="4,4" />
+                        <line x1="391" y1="197" x2="391" y2="234" stroke="#D6CEBE" strokeWidth="1.5" strokeDasharray="4,4" />
+
+                        {/* Cursor Laser / Simulador de Sierra de ejemplo */}
+                        <g className="animate-pulse" style={{ animationDuration: '2s' }}>
+                          <circle cx="285" cy="119" r="3" fill="#ef4444" />
+                          <circle cx="285" cy="119" r="6" fill="none" stroke="#ef4444" strokeWidth="0.5" className="animate-ping" style={{ animationDuration: '1s' }} />
+                        </g>
+                      </svg>
+
+                      {/* Etiqueta de madera */}
+                      <div className="absolute bottom-3 left-3 z-20 px-2.5 py-1 bg-white border border-natural-border/70 rounded-lg shadow-sm flex items-center gap-1.5 font-mono text-[8px] font-black text-natural-primary">
+                        <span className="w-1.5 h-1.5 rounded-full bg-natural-primary" />
+                        DESPIECE: MDF CORTE ÓPTIMO
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -555,22 +705,73 @@ export default function App() {
             <div className="space-y-12">
               <h2 className="text-5xl font-black text-natural-primary italic tracking-tighter text-center">Modelado 3D como herramienta de venta</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-                <div className="order-2 md:order-1 bg-natural-primary p-12 rounded-[3rem] text-white space-y-8">
-                  <h4 className="text-2xl font-black italic tracking-tight uppercase">Visualización Inmersiva</h4>
-                  <p className="opacity-80 leading-relaxed">
-                    Un cliente que puede visualizar su mueble antes de que se corte la primera tabla es un cliente más seguro. Nuestra vista previa 3D te permite mostrar la proporción exacta del mueble, la distribución de estantes y, lo más importante, el acabado final.
-                  </p>
-                  <p className="opacity-80 leading-relaxed">
-                    Con las opciones de texturas como Roble, Cerezo y acabados modernos, puedes presentar propuestas realistas que eliminan las dudas sobre el resultado estético del proyecto.
-                  </p>
+                <div className="space-y-8">
+                  <div className="bg-natural-primary p-10 rounded-[3rem] text-white space-y-6 shadow-xl">
+                    <h4 className="text-2xl font-black italic tracking-tight uppercase">Visualización Inmersiva</h4>
+                    <p className="opacity-80 leading-relaxed text-sm">
+                      Un cliente que puede visualizar su mueble antes de que se corte la primera tabla es un cliente más seguro. Nuestra vista previa 3D te permite mostrar la proporción exacta del mueble, la distribución de estantes y, lo más importante, el acabado final.
+                    </p>
+                    <p className="opacity-80 leading-relaxed text-sm">
+                      Prueba a interactuar con el modelo de la derecha usando tu mouse o pantalla táctil para rotar, hacer zoom, cambiar acabados modernos y estudiar la estructura técnica.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-base text-natural-secondary font-medium leading-relaxed">
+                      El diseño asistido por computadora ya no es exclusivo de grandes estudios de arquitectura. Cortex lleva el poder del modelado isométrico a tu navegador, permitiéndote iterar sobre dimensiones de altura, profundidad y ancho en tiempo real.
+                    </p>
+                    <p className="text-base text-natural-secondary font-medium leading-relaxed">
+                      Además, nuestra función de "Detalle de Montaje" en modo wireframe (esquema de alambre) permite desglosar la estructura interna. Esto es fundamental para entender cómo encajan los amarres superiores, el fondo y los zócalos, garantizando una construcción robusta y duradera.
+                    </p>
+                  </div>
                 </div>
-                <div className="order-1 md:order-2 space-y-6">
-                  <p className="text-lg text-natural-secondary font-medium leading-relaxed">
-                    El diseño asistido por computadora ya no es exclusivo de grandes estudios de arquitectura. Cortex lleva el poder del modelado isométrico a tu navegador, permitiéndote iterar sobre dimensiones de altura, profundidad y ancho en tiempo real.
-                  </p>
-                  <p className="text-lg text-natural-secondary font-medium leading-relaxed">
-                    Además, nuestra función de "Detalle de Montaje" en modo wireframe (esquema de alambre) permite desglosar la estructura interna. Esto es fundamental para entender cómo encajan los amarres superiores, el fondo y los zócalos, garantizando una construcción robusta y duradera.
-                  </p>
+
+                <div className="w-full bg-white rounded-[3rem] border border-natural-border shadow-2xl relative overflow-hidden flex flex-col p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase text-natural-accent tracking-widest leading-none">DEMO INTERACTIVA 3D</span>
+                      <span className="text-sm font-black text-natural-primary leading-tight mt-1">Estante de 6 Cubos Escalinata</span>
+                    </div>
+                    <div className="px-3 py-1 bg-natural-muted text-natural-primary rounded-full text-[9px] font-black uppercase tracking-widest">
+                      Modelo en vivo
+                    </div>
+                  </div>
+
+                  <div className="w-full h-[320px] bg-natural-muted/30 rounded-2xl overflow-hidden border border-natural-border/60 relative">
+                    <ThreeDView 
+                      type={landingDemoItem.type} 
+                      dimensions={landingDemoItem.dimensions}
+                      parts={landingDemoItem.parts}
+                      steppedShelfParams={landingDemoItem.steppedShelfParams}
+                      finishColor={landingColor}
+                      wireframe={landingWireframe}
+                      className="w-full h-full"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex gap-2">
+                      {[
+                        { name: 'Blanco', hex: '#FFFFFF' },
+                        { name: 'Roble', hex: '#B8977E' },
+                        { name: 'Cerezo', hex: '#93441A' }
+                      ].map(c => (
+                        <button
+                          key={c.hex}
+                          onClick={() => setLandingColor(c.hex)}
+                          className={`w-7 h-7 rounded-lg border transition-all ${landingColor === c.hex ? 'border-natural-primary scale-110 shadow-md ring-2 ring-natural-primary/20' : 'border-natural-border hover:scale-105'}`}
+                          style={{ backgroundColor: c.hex }}
+                          title={c.name}
+                        />
+                      ))}
+                    </div>
+                    
+                    <button
+                      onClick={() => setLandingWireframe(!landingWireframe)}
+                      className={`text-[9px] uppercase font-black tracking-widest px-4 py-2 rounded-xl border transition-all ${landingWireframe ? 'bg-natural-primary text-white border-natural-primary shadow-md' : 'bg-natural-muted/60 border-natural-border text-natural-secondary hover:bg-natural-primary/5 hover:text-natural-primary'}`}
+                    >
+                      Estructura Alámbrica
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -646,19 +847,31 @@ export default function App() {
             </div>
           </section>
 
-          {/* Espacio para AdSense en Landing */}
-          <div className="mt-40 w-full p-20 bg-natural-border/20 rounded-[4rem] text-center border border-dashed border-natural-border">
-             <p className="text-[10px] font-black uppercase tracking-widest text-natural-secondary mb-8">Anuncio Informativo</p>
-             <div className="max-w-3xl mx-auto space-y-6">
-               <p className="text-lg text-natural-primary font-bold italic">
-                 Al utilizar nuestra plataforma, apoyas el desarrollo continuo de herramientas gratuitas para toda la comunidad de carpintería y diseño.
-               </p>
-               <div className="w-full h-[280px] bg-white border border-natural-border rounded-3xl flex items-center justify-center shadow-sm">
-                  <span className="text-[10px] uppercase font-black tracking-widest text-natural-muted">Publicidad Relevante &bull; Espacio Google Adsense</span>
-               </div>
-             </div>
-          </div>
+
           
+          <section className="mt-40 bg-natural-primary p-20 rounded-[4rem] text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48 blur-3xl group-hover:scale-110 transition-transform duration-700" />
+            <div className="relative z-10 max-w-3xl mx-auto text-center space-y-10">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">
+                <Plus className="w-3 h-3" /> Convocatoria Abierta
+              </div>
+              <h2 className="text-5xl font-black italic tracking-tighter leading-tight">¿Diseñas modelos únicos? Únete a nuestra galería.</h2>
+              <p className="text-xl font-medium opacity-80 leading-relaxed">
+                Estamos buscando a los mejores diseñadores y carpinteros digitales para expandir nuestra biblioteca de plantillas. Envía tus modelos y ayuda a miles de creadores a dar vida a sus proyectos.
+              </p>
+              <div className="flex justify-center">
+                <a 
+                  href="https://wa.me/56952504101?text=Hola%2C%20quiero%20enviar%20mis%20modelos%20para%20CORTEX" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="px-12 py-5 bg-white text-natural-primary rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-natural-accent transition-all shadow-xl shadow-black/20"
+                >
+                  Enviar mi Propuesta
+                </a>
+              </div>
+            </div>
+          </section>
+
           <footer className="mt-40 text-center pb-20 space-y-6">
              <div className="flex items-center justify-center gap-10">
                 <button onClick={() => setView('landing')} className="text-[10px] font-black uppercase tracking-widest text-natural-secondary hover:text-natural-primary">Inicio</button>
@@ -1369,6 +1582,25 @@ export default function App() {
           <span>Sustrato: MDF Crudo/Melamina</span>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Button */}
+      <a 
+        href="https://wa.me/56952504101?text=quiero%20saber%20m%C3%A1s%20de%20CORTEX"
+        target="_blank"
+        rel="noreferrer"
+        className="fixed bottom-10 right-10 z-[100] flex items-center gap-3 px-6 py-4 bg-[#25D366] text-white rounded-3xl shadow-2xl hover:scale-105 transition-all group"
+        title="Soporte WhatsApp"
+      >
+        <div className="flex flex-col items-end">
+          <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-80 leading-none">WhatsApp</span>
+          <span className="text-[11px] font-black leading-tight">Consultar Cortex</span>
+        </div>
+        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-inner">
+          <svg viewBox="0 0 24 24" className="w-6 h-6 fill-[#25D366]" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          </svg>
+        </div>
+      </a>
     </div>
   );
 }

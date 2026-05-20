@@ -182,9 +182,9 @@ const FurnitureModel: React.FC<FurnitureModelProps> = ({ type, dimensions, parts
   );
 };
 
-export const ThreeDView: React.FC<FurnitureModelProps> = (props) => {
+export const ThreeDView: React.FC<FurnitureModelProps & { className?: string }> = ({ className, ...props }) => {
   return (
-    <div className="w-full h-[700px] bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+    <div className={className || "w-full h-[700px] bg-slate-100 rounded-lg overflow-hidden border border-slate-200"}>
       <Canvas shadows gl={{ preserveDrawingBuffer: true }}>
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={[1.5, 1.5, 1.5]} />
